@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NutriMind AI – Context-Aware Smart Eating System powered by behavioral AI, mood analysis, and personalized nutrition intelligence.">
+  <meta name="theme-color" content="#0f172a">
+  <title>NutriMind AI – Smart Eating System</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/additions.css">
+  <script>
+    // Auth guard – redirect to login if not authenticated
+    if (!localStorage.getItem('nm_auth') && !localStorage.getItem('nm_user')) {
+      window.location.href = '/login.html';
+    }
+  </script>
+</head>
+<body>
+  <!-- 🌌 AI Neon Bio - Breathing Background -->
+  <div class="bio-blobs">
+    <div class="bio-blob left"></div>
+    <div class="bio-blob right"></div>
+  </div>
+  <div class="ui-reactive-tint" id="reactive-tint"></div>
+
+  <!-- 🎬 CINEMATIC SPLASH ANIMATION -->
+  <div id="splash-cinematic" class="splash-cinematic">
+    <div class="splash-gradient-bg"></div>
+    <div class="splash-content">
+      <div class="splash-burger-wrap">
+        <img class="img-real splash-burger" src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1200&q=80" alt="Burger">
+        <div class="burger-particles"></div>
+      </div>
+      <div class="splash-salad-wrap">
+        <img class="img-real splash-salad" src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80" alt="Salad">
+      </div>
+    </div>
+    <div class="splash-text">
+      <h2>NutriMind</h2>
+      <p>Context-Aware Health Engine</p>
+    </div>
+  </div>
+
+  <!-- ── ONBOARDING MODAL (MANDATORY FULL SCREEN) ─────────────────────────────────────── -->
+  <div id="onboarding-overlay" class="onboarding-overlay" style="display:none">
+    <div class="onboarding-card">
+      <div class="onboarding-header">
+        <div class="logo-mark">
+          <i class="fa-solid fa-brain"></i>
+        </div>
+        <h1>Welcome to <span class="gradient-text">NutriMind</span></h1>
+        <p>Your context-aware smart eating system. We need your data to initialize.</p>
+      </div>
+
+      <div class="onboarding-steps">
+        <!-- Step 1: Basic Info & Body Data -->
+        <div class="step active" id="step-1">
+          <h3><span class="step-num">01</span> User Profile</h3>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label for="ob-name">Full Name</label>
+              <input id="ob-name" type="text" placeholder="e.g. John Doe" autocomplete="off" required>
+            </div>
+            <div class="form-group full">
+              <label for="ob-email">Email (Account bound)</label>
+              <input id="ob-email" type="email" placeholder="e.g. john@example.com" autocomplete="off" required>
+            </div>
+            <div class="form-group">
+              <label for="ob-height">Height (cm)</label>
+              <input id="ob-height" type="number" placeholder="170" min="100" max="250" required>
+            </div>
+            <div class="form-group">
+              <label for="ob-weight">Weight (kg)</label>
+              <input id="ob-weight" type="number" placeholder="65" min="30" max="250" required>
+            </div>
+            <div class="form-group full">
+              <label>Primary Goal</label>
+              <div class="option-pills" id="goal-options">
+                <button class="pill" data-value="Weight Loss">⚖️ Weight Loss</button>
+                <button class="pill" data-value="Weight Gain">💪 Weight Gain</button>
+                <button class="pill" data-value="Maintain">🛡️ Maintain</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Lifestyle & Sleep -->
+        <div class="step" id="step-2">
+          <h3><span class="step-num">02</span> Lifestyle & Sleep</h3>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label>Current Living Situation</label>
+              <div class="option-pills" id="living-options">
+                <button class="pill" data-value="Home">🏠 Home</button>
+                <button class="pill" data-value="Hostel">🎓 Hostel</button>
+                <button class="pill" data-value="Working/PG">💼 Working / PG</button>
+              </div>
+            </div>
+            <div class="form-group full">
+              <label>Average Sleep duration (Hours)</label>
+              <div class="sleep-slider-container" style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 12px; border: 1px solid var(--border);">
+                <input type="range" id="ob-sleep-slider" min="4" max="10" step="0.5" value="7" style="width: 100%;">
+                <div class="sleep-display" id="ob-sleep-display" style="text-align:center; font-weight: 700; margin-top:10px; color:var(--accent);">7.0 Hours</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Daily Eating Habits -->
+        <div class="step" id="step-3">
+          <h3><span class="step-num">03</span> Eating Habits</h3>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">Select your typical meals.</p>
+          <div class="form-group full" style="margin-bottom:12px;">
+             <label>Breakfast Habit</label>
+             <div class="food-selection-grid" id="ob-breakfast-options">
+                <!-- Using real unsplash crops for UI selection -->
+                <div class="fs-card" data-value="Oats/Cereal"><img src="https://images.unsplash.com/photo-1517673132405-a56a62b18caf?auto=format&fit=crop&w=200&q=80" alt="Oats"><span>Oats/Cereal</span></div>
+                <div class="fs-card" data-value="Eggs/Toast"><img src="https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=200&q=80" alt="Eggs"><span>Eggs/Toast</span></div>
+                <div class="fs-card" data-value="Paratha/Local"><img src="https://images.unsplash.com/photo-1626786012691-897b23393278?auto=format&fit=crop&w=200&q=80" alt="Local"><span>Cooked/Local</span></div>
+                <div class="fs-card" data-value="Skip/Coffee"><img src="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=200&q=80" alt="Skip"><span>Just Coffee</span></div>
+             </div>
+          </div>
+          <div class="form-group full" style="margin-bottom:12px;">
+             <label>Lunch Habit</label>
+             <div class="food-selection-grid" id="ob-lunch-options">
+                <div class="fs-card" data-value="Rice/Curry"><img src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=200&q=80" alt="Rice"><span>Rice/Curry</span></div>
+                <div class="fs-card" data-value="Salad/Bowl"><img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=200&q=80" alt="Salad"><span>Salad/Bowl</span></div>
+                <div class="fs-card" data-value="Sandwich/Wrap"><img src="https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=200&q=80" alt="Wraps"><span>Sandwich</span></div>
+                <div class="fs-card" data-value="Junk/Fast Food"><img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=80" alt="Burger"><span>Fast Food</span></div>
+             </div>
+          </div>
+          <div class="form-group full">
+             <label>Dinner Habit</label>
+             <div class="food-selection-grid" id="ob-dinner-options">
+                <div class="fs-card" data-value="Heavy/Full"><img src="https://images.unsplash.com/photo-1544025162-81111420d151?auto=format&fit=crop&w=200&q=80" alt="Dinner"><span>Heavy/Full Meal</span></div>
+                <div class="fs-card" data-value="Light/Soup"><img src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=200&q=80" alt="Soup"><span>Light/Soup</span></div>
+                <div class="fs-card" data-value="Outside/Restaurant"><img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=200&q=80" alt="Restaurant"><span>Outside Dining</span></div>
+             </div>
+          </div>
+        </div>
+      </div>
+      <div id="ob-error" style="color:var(--red); font-size: 0.8rem; text-align: center; margin-top: 10px; display: none;"></div>
+      <div class="onboarding-nav">
+        <button id="ob-back" class="btn-ghost" style="display:none"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        <div class="step-dots">
+          <div class="dot active" id="dot-1"></div>
+          <div class="dot" id="dot-2"></div>
+          <div class="dot" id="dot-3"></div>
+        </div>
+        <button id="ob-next" class="btn-primary">Next <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DAILY CHECK-IN MODAL ─────────────────────────────────── -->
+  <div id="checkin-overlay" class="onboarding-overlay" style="display:none; z-index:9000;">
+    <div class="onboarding-card" style="max-height: 90vh; overflow-y: auto;">
+      <div class="onboarding-header">
+        <div class="logo-mark"><i class="fa-solid fa-calendar-check"></i></div>
+        <h1>Daily <span class="gradient-text">Sync</span></h1>
+        <p>Log your daily metrics to calibrate the intelligence engine.</p>
+      </div>
+      <div class="onboarding-steps">
+        <div class="step active" style="display:block">
+          <div class="form-grid">
+            <!-- MEALS (Mandatory) -->
+            <div class="form-group full">
+              <label>Yesterday's Meals *</label>
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <select id="ci-breakfast">
+                  <option value="">Select Breakfast...</option>
+                  <option value="Oatmeal">Oatmeal</option>
+                  <option value="Eggs">Eggs</option>
+                  <option value="Smoothie">Smoothie</option>
+                  <option value="Skipped">Skipped</option>
+                  <option value="Other Healthy">Other Healthy</option>
+                  <option value="Other Junk">Other Junk</option>
+                </select>
+                <select id="ci-lunch">
+                  <option value="">Select Lunch...</option>
+                  <option value="Salad">Salad</option>
+                  <option value="Chicken/Rice">Chicken/Rice</option>
+                  <option value="Sandwich">Sandwich</option>
+                  <option value="Burger/Pizza">Burger/Pizza</option>
+                  <option value="Skipped">Skipped</option>
+                  <option value="Other Healthy">Other Healthy</option>
+                  <option value="Other Junk">Other Junk</option>
+                </select>
+                <select id="ci-dinner">
+                  <option value="">Select Dinner...</option>
+                  <option value="Chicken/Fish">Chicken/Fish</option>
+                  <option value="Pasta">Pasta</option>
+                  <option value="Soup/Salad">Soup/Salad</option>
+                  <option value="Fast Food">Fast Food</option>
+                  <option value="Skipped">Skipped</option>
+                  <option value="Other Healthy">Other Healthy</option>
+                  <option value="Other Junk">Other Junk</option>
+                </select>
+                <select id="ci-snack">
+                  <option value="None">None (Optional Snack)</option>
+                  <option value="Fruit/Nuts">Fruit/Nuts</option>
+                  <option value="Protein Bar">Protein Bar</option>
+                  <option value="Chips/Cookies">Chips/Cookies</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- LIFESTYLE -->
+            <div class="form-group full">
+              <label>Current Lifestyle Mode *</label>
+              <div class="option-pills" id="ci-lifestyle-options">
+                <button class="pill active" data-value="Home"><i class="fa-solid fa-house"></i> Home</button>
+                <button class="pill" data-value="Hostel"><i class="fa-solid fa-building-user"></i> Hostel</button>
+                <button class="pill" data-value="Office"><i class="fa-solid fa-briefcase"></i> Office</button>
+              </div>
+            </div>
+
+            <!-- MOOD -->
+            <div class="form-group full">
+              <label>How do you feel today? *</label>
+              <div class="option-pills" id="ci-mood-options">
+                <button class="pill active" data-value="Happy">😄 Happy</button>
+                <button class="pill" data-value="Stressed">😤 Stressed</button>
+                <button class="pill" data-value="Tired">😴 Tired</button>
+                <button class="pill" data-value="Normal">😐 Normal</button>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>Hours Slept *</label>
+              <input id="ci-sleep" type="number" placeholder="e.g. 7" min="0" max="24" value="7">
+            </div>
+            <div class="form-group">
+              <label>Did you exercise? *</label>
+              <select id="ci-exercise">
+                <option value="Yes">Yes, I did 💪</option>
+                <option value="No">No, skipped it 🛋️</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="ci-error" style="color:var(--red); font-size: 0.8rem; text-align: center; margin-top: 10px; display: none;">Please fill all mandatory fields!</div>
+      <div class="onboarding-nav">
+        <button id="ci-submit" class="btn-primary" style="width:100%">Initialize Day <i class="fa-solid fa-rocket"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAIN APP ─────────────────────────────────────────────── -->
+  <div id="app" class="app-shell" style="display:none">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon"><i class="fa-solid fa-brain"></i></div>
+        <div class="brand-text">
+          <span class="brand-name">NutriMind</span>
+          <span class="brand-sub">AI System</span>
+        </div>
+        <button class="sidebar-toggle" id="sidebar-toggle"><i class="fa-solid fa-bars"></i></button>
+      </div>
+
+      <div class="user-widget">
+        <div class="user-avatar" id="sidebar-avatar">P</div>
+        <div class="user-info">
+          <span class="user-name" id="sidebar-name">Loading...</span>
+          <span class="user-goal" id="sidebar-goal">Healthy Eating</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <span class="nav-section-label">OVERVIEW</span>
+        <a class="nav-item active" data-page="dashboard" id="nav-dashboard">
+          <i class="fa-solid fa-chart-pie"></i><span>Dashboard</span>
+          <div class="nav-indicator"></div>
+        </a>
+        <a class="nav-item" data-page="achievements" id="nav-achievements">
+          <i class="fa-solid fa-trophy"></i><span>Achievements</span>
+        </a>
+        <a class="nav-item" data-page="habits" id="nav-habits">
+          <i class="fa-solid fa-chart-line"></i><span>Habit Tracker</span>
+        </a>
+        <a class="nav-item" data-page="report" id="nav-report">
+          <i class="fa-solid fa-file-waveform"></i><span>Daily Report</span>
+        </a>
+
+        <span class="nav-section-label">NUTRITION</span>
+        <a class="nav-item" data-page="gallery" id="nav-gallery">
+          <i class="fa-solid fa-images"></i><span>Food Gallery</span>
+        </a>
+        <a class="nav-item" data-page="logger" id="nav-logger">
+          <i class="fa-solid fa-utensils"></i><span>Meal Logger</span>
+        </a>
+        <a class="nav-item" data-page="mood" id="nav-mood">
+          <i class="fa-solid fa-face-smile"></i><span>Mood Eating</span>
+        </a>
+        <a class="nav-item" data-page="scanner" id="nav-scanner">
+          <i class="fa-solid fa-camera"></i><span>Food Scanner</span>
+        </a>
+        <a class="nav-item" data-page="grocery" id="nav-grocery">
+          <i class="fa-solid fa-basket-shopping"></i><span>Grocery List</span>
+        </a>
+
+        <span class="nav-section-label">AI FEATURES</span>
+        <a class="nav-item" data-page="cravings" id="nav-cravings">
+          <i class="fa-solid fa-bolt"></i><span>Craving Predictor</span>
+        </a>
+        <a class="nav-item" data-page="twin" id="nav-twin">
+          <i class="fa-solid fa-dna"></i><span>Digital Twin</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="health-score-mini">
+          <span class="score-label">Health Score</span>
+          <div class="score-bar-wrap">
+            <div class="score-bar-fill" id="sidebar-score-bar"></div>
+          </div>
+          <span class="score-val" id="sidebar-score-val">--</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content" id="main-content">
+
+      <!-- TOP BAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+          <div class="page-breadcrumb">
+            <span id="page-title">Dashboard</span>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="context-widget" id="context-widget">
+            <i class="fa-solid fa-sun"></i>
+            <span id="context-weather">Loading...</span>
+            <span id="context-time"></span>
+          </div>
+          <button class="notif-btn" id="notif-btn">
+            <i class="fa-solid fa-bell"></i>
+            <span class="notif-badge" id="notif-badge" style="display:none">3</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- PAGES -->
+      <div class="pages-container" id="pages-container">
+
+        <!-- ── DASHBOARD PAGE ────────────────────────────── -->
+        <section class="page active" id="page-dashboard">
+          <div class="page-header">
+            <h1>Good Evening, <span class="gradient-text" id="dash-name">Friend</span> 👋</h1>
+            <p class="page-sub">Here's your nutrition intelligence summary</p>
+          </div>
+
+          <!-- Auth banner -->
+          <div class="auth-banner" id="auth-banner">
+            <div class="auth-user-info"><i class="fa-solid fa-circle-user"></i> Signed in as <strong id="auth-name">—</strong></div>
+            <button class="btn-logout" onclick="logoutUser()"><i class="fa-solid fa-right-from-bracket"></i> Switch User</button>
+          </div>
+
+          <!-- Streak Row -->
+          <div class="streak-row" id="streak-row">
+            <div class="streak-card">
+              <div class="streak-icon">🔥</div>
+              <div class="streak-info">
+                <div class="streak-label">Current Streak</div>
+                <div class="streak-num" id="streak-current">0</div>
+                <div class="streak-sub">Consecutive days logged</div>
+                <div class="streak-cal" id="streak-cal"></div>
+              </div>
+            </div>
+            <div class="streak-card best-streak-card">
+              <div class="streak-icon">🏆</div>
+              <div class="streak-info">
+                <div class="streak-label">Best Streak</div>
+                <div class="streak-num" id="streak-best">0</div>
+                <div class="streak-sub">Personal record</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Demo Users Panel -->
+          <div class="demo-users-panel">
+            <div class="demo-panel-title"><i class="fa-solid fa-users"></i> Switch Demo User</div>
+            <div class="demo-users-row" id="demo-users-row"></div>
+          </div>
+
+          <div class="stats-grid">
+            <!-- Health Score Circle -->
+            <div class="card health-score-card">
+              <div class="card-label">Health Score</div>
+              <div class="score-ring-container">
+                <svg class="score-ring" viewBox="0 0 120 120">
+                  <circle class="ring-bg" cx="60" cy="60" r="50"/>
+                  <circle class="ring-progress" id="score-ring-prog" cx="60" cy="60" r="50"
+                    stroke-dasharray="314"
+                    stroke-dashoffset="314"/>
+                </svg>
+                <div class="score-center">
+                  <span class="score-number" id="dash-score">--</span>
+                  <span class="score-unit">/100</span>
+                </div>
+              </div>
+              <div class="score-label-bottom" id="score-label-bottom">Calculating...</div>
+            </div>
+
+            <!-- Today's Calories -->
+            <div class="card stat-card">
+              <div class="stat-icon" style="background: linear-gradient(135deg,#f59e0b,#ef4444)">
+                <i class="fa-solid fa-fire"></i>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value" id="dash-calories">0</div>
+                <div class="stat-label">Calories Today</div>
+                <div class="stat-sub">Target: 1800 kcal</div>
+              </div>
+              <div class="stat-progress">
+                <div class="prog-bar" id="cal-progress" style="width:0%"></div>
+              </div>
+            </div>
+
+            <!-- Meals Logged -->
+            <div class="card stat-card">
+              <div class="stat-icon" style="background: linear-gradient(135deg,#10b981,#059669)">
+                <i class="fa-solid fa-utensils"></i>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value" id="dash-meals">0</div>
+                <div class="stat-label">Meals Logged</div>
+                <div class="stat-sub">Today</div>
+              </div>
+              <div class="meal-dots" id="meal-dots">
+                <div class="mdot empty" title="Breakfast"></div>
+                <div class="mdot empty" title="Lunch"></div>
+                <div class="mdot empty" title="Snack"></div>
+                <div class="mdot empty" title="Dinner"></div>
+              </div>
+            </div>
+
+            <!-- Water / Hydration -->
+            <div class="card stat-card">
+              <div class="stat-icon" style="background: linear-gradient(135deg,#06b6d4,#0ea5e9)">
+                <i class="fa-solid fa-droplet"></i>
+              </div>
+              <div class="stat-info">
+                <div class="stat-value" id="dash-water">0</div>
+                <div class="stat-label">Glasses of Water</div>
+                <div class="stat-sub">Target: 8 glasses</div>
+              </div>
+              <div class="water-dots" id="water-dots"></div>
+            </div>
+          </div>
+
+          <!-- AI Pattern Alerts -->
+          <div class="section-header">
+            <h2><i class="fa-solid fa-brain"></i> AI Pattern Alerts</h2>
+            <span class="section-badge" id="pattern-count">0 patterns</span>
+          </div>
+          <div class="alerts-list" id="patterns-list">
+            <div class="empty-state">
+              <i class="fa-solid fa-robot"></i>
+              <p>Log some meals to get AI pattern insights!</p>
+            </div>
+          </div>
+
+          <!-- Context-Aware Suggestions -->
+          <div class="section-header">
+            <h2><i class="fa-solid fa-location-dot"></i> Context-Aware Suggestions</h2>
+            <span class="section-badge" id="context-badge">Based on weather + time</span>
+          </div>
+          <div class="food-cards-grid" id="context-suggestions">
+            <!-- Populated by JS -->
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="quick-actions">
+            <button class="qa-btn" onclick="navigate('logger')">
+              <i class="fa-solid fa-plus"></i> Log Meal
+            </button>
+            <button class="qa-btn" onclick="navigate('mood')">
+              <i class="fa-solid fa-face-smile"></i> Mood Check
+            </button>
+            <button class="qa-btn" onclick="navigate('scanner')">
+              <i class="fa-solid fa-camera"></i> Scan Food
+            </button>
+            <button class="qa-btn" id="water-btn">
+              <i class="fa-solid fa-droplet"></i> +1 Water
+            </button>
+          </div>
+        </section>
+
+        <!-- ── HABIT TRACKER PAGE ─────────────────────────── -->
+        <section class="page" id="page-habits">
+          <div class="page-header">
+            <h1>Habit <span class="gradient-text">Tracker</span></h1>
+            <p class="page-sub">Track your eating patterns over time</p>
+          </div>
+
+          <div class="charts-grid">
+            <div class="card chart-card">
+              <div class="card-title"><i class="fa-solid fa-clock"></i> Meal Timing</div>
+              <div class="chart-container"><canvas id="chart-timing"></canvas></div>
+            </div>
+            <div class="card chart-card">
+              <div class="card-title"><i class="fa-solid fa-hamburger"></i> Food Categories</div>
+              <div class="chart-container"><canvas id="chart-categories"></canvas></div>
+            </div>
+            <div class="card chart-card wide">
+              <div class="card-title"><i class="fa-solid fa-chart-line"></i> Weekly Calorie Trend</div>
+              <div class="chart-container"><canvas id="chart-weekly"></canvas></div>
+            </div>
+            <div class="card chart-card">
+              <div class="card-title"><i class="fa-solid fa-star"></i> Health Score History</div>
+              <div class="chart-container"><canvas id="chart-score"></canvas></div>
+            </div>
+          </div>
+
+          <div class="habits-stats-row">
+            <div class="card habit-stat">
+              <div class="hs-icon junk"><i class="fa-solid fa-burger"></i></div>
+              <div class="hs-info">
+                <div class="hs-val" id="hs-junk">0</div>
+                <div class="hs-label">Junk Meals (7 days)</div>
+              </div>
+            </div>
+            <div class="card habit-stat">
+              <div class="hs-icon skip"><i class="fa-solid fa-ban"></i></div>
+              <div class="hs-info">
+                <div class="hs-val" id="hs-skip">0</div>
+                <div class="hs-label">Skipped Meals</div>
+              </div>
+            </div>
+            <div class="card habit-stat">
+              <div class="hs-icon late"><i class="fa-solid fa-moon"></i></div>
+              <div class="hs-info">
+                <div class="hs-val" id="hs-late">0</div>
+                <div class="hs-label">Late-Night Meals</div>
+              </div>
+            </div>
+            <div class="card habit-stat">
+              <div class="hs-icon streak"><i class="fa-solid fa-fire-flame-curved"></i></div>
+              <div class="hs-info">
+                <div class="hs-val" id="hs-streak">0</div>
+                <div class="hs-label">Day Streak 🔥</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── DAILY REPORT PAGE ──────────────────────────── -->
+        <section class="page" id="page-report">
+          <div class="page-header">
+            <h1>Daily <span class="gradient-text">AI Report</span></h1>
+            <p class="page-sub" id="report-date">Today's nutrition summary</p>
+          </div>
+
+          <div class="report-hero">
+            <div class="card report-score-card">
+              <div class="report-score-ring">
+                <svg viewBox="0 0 100 100" width="100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8"/>
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="url(#grad-ring)" stroke-width="8"
+                    stroke-dasharray="264" stroke-dashoffset="264" id="report-ring" stroke-linecap="round"
+                    transform="rotate(-90 50 50)"/>
+                  <defs>
+                    <linearGradient id="grad-ring" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" style="stop-color:#10b981"/>
+                      <stop offset="100%" style="stop-color:#06b6d4"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <span class="report-score-num" id="report-score">--</span>
+              </div>
+              <div class="report-score-info">
+                <h3>Today's Health Score</h3>
+                <p id="report-score-msg">Analyzing your day...</p>
+              </div>
+            </div>
+
+            <div class="report-macros">
+              <div class="card macro-card">
+                <div class="macro-circle" style="--pct:70; --color:#f59e0b">
+                  <span class="macro-val" id="rep-cal">0</span>
+                  <span class="macro-unit">kcal</span>
+                </div>
+                <span class="macro-label">Calories</span>
+              </div>
+              <div class="card macro-card">
+                <div class="macro-circle" style="--pct:60; --color:#10b981">
+                  <span class="macro-val" id="rep-protein">0g</span>
+                </div>
+                <span class="macro-label">Protein</span>
+              </div>
+              <div class="card macro-card">
+                <div class="macro-circle" style="--pct:80; --color:#06b6d4">
+                  <span class="macro-val" id="rep-meals">0</span>
+                </div>
+                <span class="macro-label">Meals</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="report-sections">
+            <div class="card report-section">
+              <h3><i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b"></i> Mistakes Today</h3>
+              <ul class="report-list mistakes" id="report-mistakes">
+                <li class="no-item">No mistakes recorded yet — great start! 🎉</li>
+              </ul>
+            </div>
+            <div class="card report-section">
+              <h3><i class="fa-solid fa-lightbulb" style="color:#10b981"></i> AI Suggestions</h3>
+              <ul class="report-list suggestions" id="report-suggestions">
+                <li>Log today's meals to get personalized suggestions.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="card report-timeline">
+            <h3><i class="fa-solid fa-timeline"></i> Today's Meal Timeline</h3>
+            <div class="timeline" id="report-timeline">
+              <div class="empty-state"><i class="fa-solid fa-utensils"></i><p>No meals logged yet</p></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── MEAL LOGGER PAGE ───────────────────────────── -->
+        <section class="page" id="page-logger">
+          <div class="page-header">
+            <h1>Meal <span class="gradient-text">Logger</span></h1>
+            <p class="page-sub">Track what you eat to unlock AI insights</p>
+          </div>
+
+          <div class="logger-layout">
+            <div class="logger-form-wrap">
+              <div class="card logger-form">
+                <h3><i class="fa-solid fa-plus"></i> Add Meal</h3>
+                <div class="form-group">
+                  <label>Food Name</label>
+                  <div class="autocomplete-wrap">
+                    <input id="log-food" type="text" placeholder="e.g. Oatmeal, Pizza..." autocomplete="off">
+                    <div class="autocomplete-dropdown" id="food-dropdown"></div>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Calories</label>
+                    <input id="log-cal" type="number" placeholder="e.g. 350" min="0">
+                  </div>
+                  <div class="form-group">
+                    <label>Category</label>
+                    <select id="log-cat">
+                      <option value="breakfast">🌅 Breakfast</option>
+                      <option value="lunch">☀️ Lunch</option>
+                      <option value="snack">🍎 Snack</option>
+                      <option value="dinner">🌙 Dinner</option>
+                      <option value="junk">🍔 Junk Food</option>
+                      <option value="other">📦 Other</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Current Mood</label>
+                  <div class="mood-pills" id="log-mood-pills">
+                    <button class="mood-pill active" data-mood="happy">😄 Happy</button>
+                    <button class="mood-pill" data-mood="sad">😢 Sad</button>
+                    <button class="mood-pill" data-mood="stressed">😤 Stressed</button>
+                    <button class="mood-pill" data-mood="tired">😴 Tired</button>
+                    <button class="mood-pill" data-mood="excited">🤩 Excited</button>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Notes (optional)</label>
+                  <textarea id="log-notes" placeholder="How did this meal make you feel?" rows="2"></textarea>
+                </div>
+                <button class="btn-primary full" id="log-submit">
+                  <i class="fa-solid fa-plus"></i> Log Meal
+                </button>
+              </div>
+
+              <!-- AI Quick Suggest -->
+              <div class="card ai-suggest-panel">
+                <h3><i class="fa-solid fa-wand-magic-sparkles"></i> AI Meal Suggestions</h3>
+                <p class="suggest-meta">Based on your time & preferences</p>
+                <div class="suggest-cards" id="logger-suggestions"></div>
+              </div>
+            </div>
+
+            <div class="meal-log-list">
+              <div class="card">
+                <div class="meals-header">
+                  <h3><i class="fa-solid fa-list"></i> Today's Meals</h3>
+                  <span class="badge" id="today-meal-count">0 meals</span>
+                </div>
+                <div id="meals-list">
+                  <div class="empty-state">
+                    <i class="fa-solid fa-utensils"></i>
+                    <p>No meals logged today.<br>Start tracking!</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── MOOD EATING PAGE ───────────────────────────── -->
+        <section class="page" id="page-mood">
+          <div class="page-header">
+            <h1>Mood-Based <span class="gradient-text">Eating</span></h1>
+            <p class="page-sub">Your AI picks the best food for your current mood</p>
+          </div>
+
+          <div class="mood-selector">
+            <div class="mood-option" data-mood="happy" id="mood-happy">
+              <div class="mood-emoji">😄</div>
+              <div class="mood-name">Happy</div>
+            </div>
+            <div class="mood-option" data-mood="sad" id="mood-sad">
+              <div class="mood-emoji">😢</div>
+              <div class="mood-name">Sad</div>
+            </div>
+            <div class="mood-option" data-mood="stressed" id="mood-stressed">
+              <div class="mood-emoji">😤</div>
+              <div class="mood-name">Stressed</div>
+            </div>
+            <div class="mood-option" data-mood="tired" id="mood-tired">
+              <div class="mood-emoji">😴</div>
+              <div class="mood-name">Tired</div>
+            </div>
+            <div class="mood-option" data-mood="anxious" id="mood-anxious">
+              <div class="mood-emoji">😰</div>
+              <div class="mood-name">Anxious</div>
+            </div>
+            <div class="mood-option" data-mood="excited" id="mood-excited">
+              <div class="mood-emoji">🤩</div>
+              <div class="mood-name">Excited</div>
+            </div>
+          </div>
+
+          <div id="mood-result" class="mood-result" style="display:none">
+            <div class="mood-result-header">
+              <span id="mood-result-title">Recommended for you</span>
+              <span id="mood-result-why" class="mood-why"></span>
+            </div>
+            <div class="food-cards-grid" id="mood-foods"></div>
+          </div>
+
+          <div class="mood-insight-card card" id="mood-insight">
+            <i class="fa-solid fa-brain"></i>
+            <p>Select a mood above to get personalized food recommendations powered by our Behavioral AI Engine.</p>
+          </div>
+        </section>
+
+        <!-- ── FOOD SCANNER PAGE ──────────────────────────── -->
+        <section class="page" id="page-scanner">
+          <div class="page-header">
+            <h1>Food <span class="gradient-text">Scanner</span></h1>
+            <p class="page-sub">Upload a food photo — our AI will analyze it instantly</p>
+          </div>
+
+          <div class="scanner-layout">
+            <div class="card scanner-upload-card">
+              <div class="upload-zone" id="upload-zone">
+                <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                <h3>Drop your food photo here</h3>
+                <p>or click to browse</p>
+                <input type="file" id="scan-input" accept="image/*" style="display:none">
+                <img id="scan-preview" style="display:none" alt="Food preview">
+              </div>
+              <button class="btn-primary full" id="scan-btn" disabled>
+                <i class="fa-solid fa-magnifying-glass"></i> Analyze Food
+              </button>
+            </div>
+
+            <div id="scan-result" class="scan-result" style="display:none">
+              <div class="card scan-detected">
+                <div class="scan-label">🎯 Detected Food</div>
+                <div class="scan-food-name" id="scan-name">—</div>
+                <div class="scan-confidence">
+                  <span>AI Confidence: </span>
+                  <span class="conf-val" id="scan-conf">—</span>
+                </div>
+                <div class="macro-row">
+                  <div class="macro-item"><span class="mi-val" id="scan-cal">—</span><span>kcal</span></div>
+                  <div class="macro-item"><span class="mi-val" id="scan-prot">—</span><span>Protein</span></div>
+                  <div class="macro-item"><span class="mi-val" id="scan-carb">—</span><span>Carbs</span></div>
+                  <div class="macro-item"><span class="mi-val" id="scan-fat">—</span><span>Fat</span></div>
+                </div>
+              </div>
+
+              <div class="card scan-swap">
+                <div class="swap-badge">✨ Smart Swap</div>
+                <div class="swap-name" id="swap-name">—</div>
+                <div class="swap-cal">
+                  <span id="swap-cal">—</span> kcal · Saves <span id="swap-save">—</span> cal
+                </div>
+                <div class="swap-reason" id="swap-reason">—</div>
+                <button class="btn-primary" id="log-scanned-btn">
+                  <i class="fa-solid fa-plus"></i> Log This Meal
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scan Loading -->
+          <div class="scan-loading" id="scan-loading" style="display:none">
+            <div class="scan-loading-inner">
+              <div class="scan-pulse"></div>
+              <p>Analyzing your food with AI...</p>
+              <div class="scan-progress-bar"><div class="scan-progress-fill"></div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── GROCERY PAGE ───────────────────────────────── -->
+        <section class="page" id="page-grocery">
+          <div class="page-header">
+            <h1>Smart <span class="gradient-text">Grocery</span> List</h1>
+            <p class="page-sub">AI-powered weekly shopping recommendations</p>
+          </div>
+
+          <div class="grocery-layout">
+            <div class="card grocery-summary">
+              <h3><i class="fa-solid fa-robot"></i> AI Analysis</h3>
+              <p id="grocery-analysis">Based on your recent meals, here's what you need this week.</p>
+              <div class="grocery-budget">
+                <i class="fa-solid fa-indian-rupee-sign"></i>
+                <span id="grocery-budget">₹1200–₹1800</span>
+                <span>estimated</span>
+              </div>
+            </div>
+
+            <div class="grocery-categories">
+              <div class="card grocery-cat">
+                <h4><i class="fa-solid fa-drumstick-bite" style="color:#ef4444"></i> Proteins</h4>
+                <ul class="grocery-list" id="glist-protein"></ul>
+              </div>
+              <div class="card grocery-cat">
+                <h4><i class="fa-solid fa-wheat-awn" style="color:#f59e0b"></i> Carbs</h4>
+                <ul class="grocery-list" id="glist-carbs"></ul>
+              </div>
+              <div class="card grocery-cat">
+                <h4><i class="fa-solid fa-avocado" style="color:#10b981"></i> Healthy Fats</h4>
+                <ul class="grocery-list" id="glist-fats"></ul>
+              </div>
+              <div class="card grocery-cat">
+                <h4><i class="fa-solid fa-apple-whole" style="color:#06b6d4"></i> Vitamins & Minerals</h4>
+                <ul class="grocery-list" id="glist-vitamins"></ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── CRAVING PREDICTOR PAGE ─────────────────────── -->
+        <section class="page" id="page-cravings">
+          <div class="page-header">
+            <h1>Craving <span class="gradient-text">Predictor</span></h1>
+            <p class="page-sub">AI predicts your cravings BEFORE they happen</p>
+          </div>
+
+          <div class="craving-hero">
+            <div class="card craving-main-card">
+              <div class="craving-radar">
+                <div class="radar-pulse"></div>
+                <i class="fa-solid fa-radar"></i>
+              </div>
+              <h2>Behavioral AI is scanning your patterns...</h2>
+              <p>Your eating history reveals predictable craving windows</p>
+            </div>
+          </div>
+
+          <div class="cravings-list" id="cravings-list">
+            <!-- populated by JS -->
+          </div>
+
+          <div class="card craving-tips">
+            <h3><i class="fa-solid fa-shield-heart"></i> Craving Prevention Toolkit</h3>
+            <div class="tips-grid">
+              <div class="tip-item">
+                <span class="tip-icon">💧</span>
+                <span>Drink water — often hunger is dehydration</span>
+              </div>
+              <div class="tip-item">
+                <span class="tip-icon">🥜</span>
+                <span>Keep healthy snacks prepared in advance</span>
+              </div>
+              <div class="tip-item">
+                <span class="tip-icon">⏰</span>
+                <span>Eat every 3–4 hours to stabilize blood sugar</span>
+              </div>
+              <div class="tip-item">
+                <span class="tip-icon">🏃</span>
+                <span>5-min walk resets dopamine and reduces cravings</span>
+              </div>
+              <div class="tip-item">
+                <span class="tip-icon">😴</span>
+                <span>7–9 hrs sleep reduces ghrelin (hunger hormone)</span>
+              </div>
+              <div class="tip-item">
+                <span class="tip-icon">🧘</span>
+                <span>Mindful eating: eat slow, chew more, reduce portions</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── DIGITAL TWIN PAGE ──────────────────────────── -->
+        <section class="page" id="page-twin">
+          <div class="page-header">
+            <h1>Digital <span class="gradient-text">Lifestyle Twin</span></h1>
+            <p class="page-sub">Your AI behavior model — predict & shape your future health</p>
+          </div>
+
+          <div class="twin-hero">
+            <div class="card twin-visual-card">
+              <div class="twin-avatar-wrap">
+                <div class="twin-avatar">
+                  <div class="twin-glow"></div>
+                  <i class="fa-solid fa-person-rays"></i>
+                </div>
+                <div class="twin-score-badge" id="twin-score-badge">--</div>
+              </div>
+              <div class="twin-info">
+                <h2>Your Behavior Model</h2>
+                <p>Based on <span id="twin-meal-count">0</span> logged meals and pattern analysis</p>
+                <div class="twin-traits" id="twin-traits">
+                  <!-- populated -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="twin-predictions">
+            <div class="card twin-pred-card">
+              <h3><i class="fa-solid fa-crystal-ball"></i> Score Prediction</h3>
+              <div class="chart-container"><canvas id="chart-prediction"></canvas></div>
+            </div>
+            <div class="card twin-risks">
+              <h3><i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b"></i> Risk Factors</h3>
+              <ul id="twin-risks-list" class="twin-list">
+                <li>Log meals to see personalized risk analysis</li>
+              </ul>
+            </div>
+            <div class="card twin-gains">
+              <h3><i class="fa-solid fa-trending-up" style="color:#10b981"></i> Improvement Gains</h3>
+              <ul id="twin-gains-list" class="twin-list">
+                <li>Track your habits to unlock this insight</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="card twin-behaviors">
+            <h3><i class="fa-solid fa-dna"></i> Behavior Dimensions</h3>
+            <div class="behavior-grid" id="behavior-grid">
+              <!-- populated by JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ── ACHIEVEMENTS PAGE ───────────────────────────── -->
+        <section class="page" id="page-achievements">
+          <div class="page-header">
+            <h1>Your <span class="gradient-text">Achievements</span> 🏆</h1>
+            <p class="page-sub">Unlock badges by building healthy habits consistently</p>
+          </div>
+          <div class="achievements-grid" id="achievements-grid"></div>
+          <div class="unlock-overlay" id="unlock-overlay" onclick="closeUnlockPop()"></div>
+          <div class="unlock-pop" id="unlock-pop">
+            <span class="unlock-pop-icon" id="up-icon">🏆</span>
+            <h3 id="up-title">Achievement Unlocked!</h3>
+            <p id="up-desc">You did it!</p>
+            <button class="btn-primary" style="margin-top:16px" onclick="closeUnlockPop()">Awesome! 🎉</button>
+          </div>
+        </section>
+
+        <!-- ── FOOD GALLERY PAGE ────────────────────────────── -->
+        <section class="page gallery-page" id="page-gallery">
+          <div class="page-header">
+            <h1>Food <span class="gradient-text">Gallery</span></h1>
+            <p class="page-sub">Browse by mood · Click + Add to log instantly</p>
+          </div>
+          <div class="mood-filter-bar">
+            <button class="mood-filter-btn m-all active" onclick="filterGallery('all',this)">🍽️ All Foods</button>
+            <button class="mood-filter-btn m-happy" onclick="filterGallery('happy',this)">😄 Happy</button>
+            <button class="mood-filter-btn m-stressed" onclick="filterGallery('stressed',this)">😤 Stressed</button>
+            <button class="mood-filter-btn m-tired" onclick="filterGallery('tired',this)">😴 Tired</button>
+            <button class="mood-filter-btn m-active" onclick="filterGallery('active',this)">🏃 Active</button>
+          </div>
+          <div class="mood-recommendation" id="gallery-rec" style="display:none"></div>
+          <div class="gallery-grid" id="gallery-grid"></div>
+          <div class="log-panel" style="margin-top:24px">
+            <h3><i class="fa-solid fa-list-check" style="color:var(--green)"></i> Today's Food Log</h3>
+            <div class="log-entries" id="gallery-log-entries">
+              <div class="log-empty">No foods added yet. Pick from the gallery above!</div>
+            </div>
+            <div class="log-total" id="gallery-log-total" style="display:none">
+              <span>Total Calories Today</span>
+              <span id="gallery-total-cal">0 kcal</span>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /pages-container -->
+    </main>
+  </div><!-- /app -->
+
+  <!-- ── FLOATING CHAT BUTTON ─────────────────────────────────── -->
+  <button class="chat-fab" id="chat-fab" title="AI Nutrition Assistant">
+    <i class="fa-solid fa-robot"></i>
+    <span class="fab-tooltip">Ask NutriMind AI</span>
+  </button>
+
+  <!-- ── CHAT PANEL ────────────────────────────────────────────── -->
+  <div class="chat-panel" id="chat-panel">
+    <div class="chat-header">
+      <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
+      <div class="chat-title">
+        <span>NutriMind AI</span>
+        <span class="chat-status"><span class="status-dot"></span> Online</span>
+      </div>
+      <button class="chat-close" id="chat-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg ai">
+        <div class="msg-avatar"><i class="fa-solid fa-robot"></i></div>
+        <div class="msg-bubble">
+          <p>Hello! I'm NutriMind AI 🧠✨</p>
+          <p>I can help you with meal planning, nutrition advice, and personalized food suggestions. What would you like to know?</p>
+          <div class="quick-replies">
+            <button class="qr-btn" onclick="sendQuickReply('What should I eat for breakfast?')">Breakfast ideas</button>
+            <button class="qr-btn" onclick="sendQuickReply('How can I lose weight?')">Weight loss tips</button>
+            <button class="qr-btn" onclick="sendQuickReply('What is my health score?')">My health score</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="chat-input-wrap">
+      <input type="text" id="chat-input" placeholder="Ask me about nutrition..." autocomplete="off">
+      <button id="chat-send"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <!-- ── TOAST NOTIFICATIONS ───────────────────────────────────── -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ── NOTIFICATION PANEL ────────────────────────────────────── -->
+  <div class="notif-panel" id="notif-panel" style="display:none">
+    <div class="notif-panel-header">
+      <span><i class="fa-solid fa-bell"></i> Smart Alerts</span>
+      <button id="notif-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="notif-list" id="notif-list"></div>
+  </div>
+
+  <!-- ── DAILY CHECK-IN MODAL ───────────────────────────────────── -->
+  <div id="daily-checkin-modal" class="daily-checkin-modal">
+    <div class="checkin-container">
+      <div class="checkin-header">
+        <h2><i class="fa-solid fa-calendar-check"></i> Daily Check-In</h2>
+        <p>Track your daily health habits</p>
+        <div class="checkin-date" id="checkin-date"></div>
+      </div>
+      
+      <div class="checkin-error" id="checkin-error"></div>
+      
+      <form id="daily-checkin-form">
+        <!-- Meals Section -->
+        <div class="checkin-section">
+          <h3><i class="fa-solid fa-utensils"></i> Today's Meals</h3>
+          <div class="meal-section">
+            <h4>Breakfast *</h4>
+            <input id="daily-breakfast" type="text" placeholder="e.g. Dal Bhat" autocomplete="off" required>
+          </div>
+          <div class="meal-section">
+            <h4>Lunch *</h4>
+            <input id="daily-lunch" type="text" placeholder="e.g. Roti Sabzi" autocomplete="off" required>
+          </div>
+          <div class="meal-section">
+            <h4>Dinner *</h4>
+            <input id="daily-dinner" type="text" placeholder="e.g. Maggi" autocomplete="off" required>
+          </div>
+          <div class="meal-section">
+            <h4>Snacks (Optional)</h4>
+            <input id="daily-snacks" type="text" placeholder="e.g. Apple, Nuts" autocomplete="off">
+          </div>
+        </div>
+        
+        <!-- Sleep Section -->
+        <div class="checkin-section">
+          <h3><i class="fa-solid fa-moon"></i> Sleep</h3>
+          <div class="checkin-form-group">
+            <label>How many hours did you sleep last night? *</label>
+            <div class="sleep-slider-container">
+              <input type="range" id="daily-sleep-slider" class="sleep-slider" min="4" max="10" value="7">
+              <div class="sleep-display" id="daily-sleep-display">7 hours</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Mood Section -->
+        <div class="checkin-section">
+          <h3><i class="fa-solid fa-smile"></i> Mood</h3>
+          <div class="mood-options">
+            <div class="mood-option" data-mood="happy">
+              <i class="fa-solid fa-laugh"></i>
+              <span>Happy</span>
+            </div>
+            <div class="mood-option" data-mood="stressed">
+              <i class="fa-solid fa-tired"></i>
+              <span>Stressed</span>
+            </div>
+            <div class="mood-option" data-mood="tired">
+              <i class="fa-solid fa-bed"></i>
+              <span>Tired</span>
+            </div>
+            <div class="mood-option" data-mood="normal">
+              <i class="fa-solid fa-meh"></i>
+              <span>Normal</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Activity Section -->
+        <div class="checkin-section">
+          <h3><i class="fa-solid fa-running"></i> Activity</h3>
+          <div class="activity-options">
+            <div class="activity-option" data-activity="yes">
+              <i class="fa-solid fa-check-circle"></i>
+              <span>Yes, I exercised</span>
+            </div>
+            <div class="activity-option" data-activity="no">
+              <i class="fa-solid fa-times-circle"></i>
+              <span>No exercise today</span>
+            </div>
+          </div>
+        </div>
+        
+        <button type="submit" class="checkin-submit">
+          <span><i class="fa-solid fa-save"></i> Complete Daily Check-In</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/store.js"></script>
+  <script src="/js/notifications.js"></script>
+  <script src="/js/ai.js"></script>
+  <script src="/js/analytics.js"></script>
+  <script src="/js/scanner.js"></script>
+  <script src="/js/chat.js"></script>
+  <script src="/js/streaks.js"></script>
+  <script src="/js/gallery.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

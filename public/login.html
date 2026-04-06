@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NutriMind AI – Smart Eating System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #d1fae5, #e0f2fe, #f0fdf4);
+      overflow-x: hidden;
+      color: #0f172a;
+    }
+
+    /* ═══════════════════════════════════════════════
+       SECTION 1: CINEMATIC SPLASH SCREEN
+    ═══════════════════════════════════════════════ */
+    #splash-screen {
+      position: fixed; inset: 0; z-index: 10000;
+      background: #000;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      overflow: hidden;
+      transition: opacity 1.4s ease;
+    }
+    #splash-screen.hidden { opacity: 0; pointer-events: none; }
+
+    /* Gradient background that reveals during salad phase */
+    .splash-bg {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, #d1fae5 0%, #e0f2fe 50%, #f0fdf4 100%);
+      opacity: 0; transition: opacity 1.5s ease; z-index: 0;
+    }
+
+    /* NutriMind title above food */
+    .splash-brand {
+      position: relative; z-index: 10; text-align: center;
+      margin-bottom: 28px; flex-shrink: 0;
+    }
+    .splash-brand h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2.5rem, 7vw, 5rem);
+      font-weight: 800; color: #fff;
+      letter-spacing: -2px;
+      opacity: 0; transform: translateY(-30px);
+      transition: all 1s ease 0.3s;
+      text-shadow: 0 4px 40px rgba(34,197,94,0.5);
+    }
+    .splash-brand p {
+      font-size: clamp(0.9rem, 2.5vw, 1.4rem);
+      color: rgba(255,255,255,0.65); font-weight: 500;
+      margin-top: 8px; letter-spacing: 0.5px;
+      opacity: 0; transform: translateY(-10px);
+      transition: all 1s ease 0.6s;
+    }
+    .splash-brand.visible h1,
+    .splash-brand.visible p {
+      opacity: 1; transform: translateY(0);
+    }
+
+    /* Food stage */
+    .food-stage {
+      position: relative; z-index: 5;
+      width: 78vmin; height: 78vmin;
+      max-width: 700px; max-height: 700px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Radial glow behind salad */
+    .food-glow {
+      position: absolute; inset: -20%; border-radius: 50%;
+      background: radial-gradient(circle, rgba(34,197,94,0.3) 0%, rgba(14,165,233,0.2) 50%, transparent 75%);
+      filter: blur(70px); opacity: 0;
+      transition: opacity 1.8s ease; z-index: 1;
+    }
+
+    /* Food images base */
+    .food-img {
+      position: absolute; object-fit: cover;
+      border-radius: 24px; transition: all 0.8s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* === BIG BURGER === */
+    .burger-main {
+      width: 78%; height: 78%; z-index: 10;
+      opacity: 0; transform: scale(0);
+      filter: drop-shadow(0 30px 70px rgba(255,180,0,0.4));
+    }
+
+    /* Burst layers */
+    .burger-top-bun    { width:55%; height:22%; top:7%;  left:22%; z-index:15; opacity:0; border-radius:60px 60px 16px 16px; }
+    .burger-patty      { width:50%; height:18%; top:37%; left:25%; z-index:12; opacity:0; border-radius:10px; }
+    .burger-cheese     { width:48%; height:11%; top:31%; left:26%; z-index:13; opacity:0; border-radius:8px;  }
+    .burger-lettuce    { width:52%; height:10%; top:25%; left:24%; z-index:14; opacity:0; border-radius:14px; }
+    .burger-bottom-bun { width:55%; height:20%; top:55%; left:22%; z-index:11; opacity:0; border-radius:20px 20px 60px 60px; }
+
+    /* === BIG SALAD === */
+    .salad-main {
+      width: 78%; height: 78%; z-index: 20;
+      opacity: 0; transform: scale(0) rotate(-8deg);
+      filter: drop-shadow(0 20px 60px rgba(0,0,0,0.3));
+      transition: all 1.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Particles */
+    .particles-wrap { position: absolute; inset: 0; z-index: 25; pointer-events: none; overflow: hidden; }
+    .ptcl { position: absolute; border-radius: 50%; opacity: 0; }
+
+    /* ── STEP CLASSES ── */
+    /* Step 1: Burger bounce in */
+    .step-1 .burger-main { opacity: 1; transform: scale(1); animation: burgerIn 1s cubic-bezier(0.175,0.885,0.32,1.275) forwards; }
+    @keyframes burgerIn {
+      0%   { transform: scale(0);    opacity: 0; }
+      60%  { transform: scale(1.1);  opacity: 1; }
+      80%  { transform: scale(0.95); }
+      100% { transform: scale(1);    }
+    }
+
+    /* Step 2: Zoom forward */
+    .step-2 .burger-main { opacity: 1; transform: scale(1.3); filter: brightness(1.4) contrast(1.3) drop-shadow(0 0 80px rgba(255,200,0,0.8)); }
+
+    /* Step 3: Crash — layers fly */
+    .step-3 .burger-main   { opacity: 0; transform: scale(2.5); filter: blur(25px) brightness(3); }
+    .step-3 .burger-top-bun    { opacity: 1; transform: translateY(-220px) translateX(-60px)  rotate(-45deg) scale(1.5); }
+    .step-3 .burger-patty      { opacity: 1; transform: translateY(180px)  translateX(200px)  rotate(40deg)  scale(1.4); }
+    .step-3 .burger-cheese     { opacity: 1; transform: translateY(-80px)  translateX(-220px) rotate(-65deg) scale(1.5); }
+    .step-3 .burger-lettuce    { opacity: 1; transform: translateY(-140px) translateX(240px)  rotate(60deg)  scale(1.6); }
+    .step-3 .burger-bottom-bun { opacity: 1; transform: translateY(250px)  translateX(20px)   rotate(50deg)  scale(1.4); }
+    .step-3 .ptcl { opacity: 1; animation: ptcBurst 1s ease-out forwards; }
+    @keyframes ptcBurst {
+      0%   { transform: translate(0,0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--tx),var(--ty)) scale(0); opacity: 0; }
+    }
+
+    /* Step 4: Layers vanish */
+    .step-4 .burger-top-bun,
+    .step-4 .burger-patty,
+    .step-4 .burger-cheese,
+    .step-4 .burger-lettuce,
+    .step-4 .burger-bottom-bun { opacity: 0; transform: scale(0) rotate(720deg); filter: blur(30px); }
+
+    /* Step 5: Big salad */
+    .step-5 .salad-main {
+      opacity: 1; transform: scale(1.05) rotate(0deg);
+      filter: drop-shadow(0 20px 50px rgba(0,0,0,0.2)) drop-shadow(0 0 90px rgba(34,197,94,0.8));
+      animation: saladIn 1.3s cubic-bezier(0.175,0.885,0.32,1.275) forwards;
+    }
+    .step-5 .food-glow { opacity: 1; }
+    @keyframes saladIn {
+      0%   { transform: scale(0) rotate(-8deg); opacity: 0; }
+      60%  { transform: scale(1.2) rotate(3deg); opacity: 1; }
+      80%  { transform: scale(0.98); }
+      100% { transform: scale(1.05); }
+    }
+
+    /* Step 6: Glow pulse */
+    .step-6 .salad-main { opacity: 1; transform: scale(1.05); animation: saladPulse 2.5s ease-in-out infinite; }
+    .step-6 .food-glow { opacity: 1; }
+    @keyframes saladPulse {
+      0%,100% { filter: drop-shadow(0 0 80px rgba(34,197,94,0.8)); transform: scale(1.05); }
+      50%     { filter: drop-shadow(0 0 120px rgba(34,197,94,1))  ; transform: scale(1.08); }
+    }
+
+    /* ═══════════════════════════════════════════════
+       SECTION 2: LOGIN SCREEN
+    ═══════════════════════════════════════════════ */
+    #login-screen {
+      display: none; min-height: 100vh;
+      align-items: center; justify-content: center;
+      padding: 20px; position: relative;
+    }
+    #login-screen.visible { display: flex; animation: screenFade 0.8s ease; }
+    @keyframes screenFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Floating orbs background */
+    .bg-orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+    .orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.45; animation: orbFloat 12s ease-in-out infinite; }
+    .orb-1 { width: 380px; height: 380px; background: linear-gradient(135deg,#86efac,#22c55e); top: -120px; left: -120px; }
+    .orb-2 { width: 480px; height: 480px; background: linear-gradient(135deg,#7dd3fc,#0ea5e9); bottom: -140px; right: -140px; animation-delay: 4s; }
+    .orb-3 { width: 300px; height: 300px; background: linear-gradient(135deg,#fde68a,#fbbf24); top: 50%; left: 5%; animation-delay: 8s; opacity: 0.3; }
+    @keyframes orbFloat {
+      0%,100% { transform: translate(0,0) scale(1); }
+      33%     { transform: translate(30px,-30px) scale(1.05); }
+      66%     { transform: translate(-20px,25px) scale(0.95); }
+    }
+
+    .login-card {
+      position: relative; z-index: 10;
+      width: 100%; max-width: 440px;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 24px; padding: 36px 32px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.08), 0 8px 24px rgba(34,197,94,0.08);
+      animation: cardFloat 6s ease-in-out infinite;
+    }
+    @keyframes cardFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+    .login-logo { text-align: center; margin-bottom: 28px; }
+    .login-logo-icon {
+      width: 60px; height: 60px;
+      background: linear-gradient(135deg,#22c55e,#0ea5e9);
+      border-radius: 18px; display: flex; align-items: center; justify-content: center;
+      font-size: 26px; color: #fff; margin: 0 auto 14px;
+      box-shadow: 0 8px 28px rgba(34,197,94,0.3);
+      animation: logoGlow 2.5s ease infinite alternate;
+    }
+    @keyframes logoGlow { from { box-shadow: 0 8px 28px rgba(34,197,94,0.3); } to { box-shadow: 0 8px 40px rgba(34,197,94,0.5); } }
+    .login-logo h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; color: #0f172a; }
+    .login-logo h2 span { background: linear-gradient(135deg,#22c55e,#0ea5e9); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .login-logo p { font-size: 0.8rem; color: #64748b; margin-top: 3px; }
+
+    .login-welcome { text-align: center; font-size: 0.88rem; color: #475569; font-weight: 500; margin-bottom: 20px; }
+
+    /* Google button */
+    .btn-google {
+      width: 100%; padding: 13px; background: #fff;
+      border: 1.5px solid rgba(0,0,0,0.1); border-radius: 50px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      font-size: 0.9rem; font-weight: 600; color: #374151; cursor: pointer;
+      transition: all 0.3s ease; margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .btn-google:hover { background: #fafafa; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+    .google-svg { width: 18px; height: 18px; }
+
+    /* Tabs */
+    .auth-tabs { display: flex; background: rgba(241,245,249,0.8); border-radius: 12px; padding: 4px; margin-bottom: 22px; }
+    .auth-tab { flex: 1; padding: 10px; text-align: center; font-size: 0.87rem; font-weight: 600; color: #64748b; cursor: pointer; border-radius: 8px; transition: all 0.3s ease; }
+    .auth-tab.active { color: #fff; background: linear-gradient(135deg,#22c55e,#16a34a); box-shadow: 0 2px 8px rgba(34,197,94,0.3); }
+
+    /* Form groups */
+    .form-group { position: relative; margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.72rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 7px; }
+    .input-wrap { position: relative; }
+    .input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 14px; z-index: 2; transition: color 0.3s; }
+    .form-control {
+      width: 100%; padding: 13px 16px 13px 42px;
+      background: rgba(255,255,255,0.9); border: 1.5px solid rgba(148,163,184,0.3);
+      border-radius: 12px; color: #0f172a; font-size: 0.9rem;
+      transition: all 0.3s ease; outline: none;
+    }
+    .form-control:focus { border-color: #22c55e; background: #fff; box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
+    .form-control:focus ~ .input-icon { color: #22c55e; }
+    .form-group.err .form-control { border-color: #ef4444; }
+
+    .form-section { display: none; }
+    .form-section.active { display: block; animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(15px); } to { opacity: 1; transform: translateX(0); } }
+
+    /* Error messages */
+    .msg-error { background: rgba(239,68,68,0.08); border: 1.5px solid rgba(239,68,68,0.2); color: #dc2626; padding: 11px 15px; border-radius: 10px; font-size: 0.82rem; margin-bottom: 14px; display: none; }
+
+    /* Submit buttons */
+    .btn-submit {
+      width: 100%; padding: 14px; margin-top: 10px;
+      background: linear-gradient(135deg,#22c55e,#16a34a);
+      border: none; border-radius: 50px; color: #fff;
+      font-size: 0.92rem; font-weight: 700; cursor: pointer;
+      transition: all 0.3s ease; position: relative; overflow: hidden;
+    }
+    .btn-submit::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg,#16a34a,#15803d); opacity: 0; transition: opacity 0.3s; }
+    .btn-submit:hover::before { opacity: 1; }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(34,197,94,0.4); }
+    .btn-submit span { position: relative; z-index: 1; }
+
+    /* ═══════════════════════════════════════════════
+       SECTION 3 & 4: ONBOARDING STEPS
+    ═══════════════════════════════════════════════ */
+    .onboarding-screen {
+      display: none; min-height: 100vh;
+      align-items: center; justify-content: center;
+      padding: 20px; position: relative;
+    }
+    .onboarding-screen.visible { display: flex; animation: screenFade 0.7s ease; }
+
+    .ob-card {
+      position: relative; z-index: 10;
+      width: 100%; max-width: 600px;
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(34,197,94,0.15);
+      border-radius: 28px; padding: 44px 40px;
+      box-shadow: 0 30px 100px rgba(0,0,0,0.09), 0 10px 28px rgba(34,197,94,0.07);
+    }
+
+    .ob-header { text-align: center; margin-bottom: 36px; }
+    .ob-step-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg,#22c55e,#0ea5e9);
+      color: #fff; font-size: 0.75rem; font-weight: 700;
+      padding: 6px 14px; border-radius: 50px; margin-bottom: 16px;
+      text-transform: uppercase; letter-spacing: 0.8px;
+    }
+    .ob-header h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.9rem; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
+    .ob-header h2 span { background: linear-gradient(135deg,#22c55e,#0ea5e9); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .ob-header p { font-size: 0.93rem; color: #64748b; line-height: 1.5; }
+
+    /* Progress bar */
+    .ob-progress { height: 4px; background: rgba(148,163,184,0.2); border-radius: 2px; margin-bottom: 34px; overflow: hidden; }
+    .ob-progress-bar { height: 100%; background: linear-gradient(90deg,#22c55e,#0ea5e9); border-radius: 2px; transition: width 0.5s ease; }
+
+    /* Onboarding inputs */
+    .ob-form-group { margin-bottom: 20px; }
+    .ob-form-group label { display: block; font-size: 0.78rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 9px; }
+    .ob-input {
+      width: 100%; padding: 14px 18px;
+      background: rgba(248,250,252,0.9); border: 2px solid rgba(148,163,184,0.25);
+      border-radius: 14px; color: #0f172a; font-size: 0.95rem; font-family: 'Inter', sans-serif;
+      transition: all 0.3s ease; outline: none;
+    }
+    .ob-input:focus { border-color: #22c55e; background: #fff; box-shadow: 0 0 0 4px rgba(34,197,94,0.08); }
+    .ob-input.err { border-color: #ef4444; }
+
+    /* Grid layout */
+    .ob-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* Option pill buttons */
+    .ob-pills { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+    .ob-pill {
+      padding: 11px 20px; background: rgba(248,250,252,0.9);
+      border: 2px solid rgba(148,163,184,0.25); border-radius: 50px;
+      font-size: 0.87rem; font-weight: 600; color: #374151;
+      cursor: pointer; transition: all 0.25s ease;
+    }
+    .ob-pill:hover { border-color: #22c55e; background: #f0fdf4; color: #16a34a; }
+    .ob-pill.selected { background: linear-gradient(135deg,#22c55e,#16a34a); color: #fff; border-color: transparent; box-shadow: 0 4px 14px rgba(34,197,94,0.3); }
+
+    /* Sleep slider */
+    .sleep-slider-wrap { background: rgba(248,250,252,0.9); padding: 18px 20px; border-radius: 16px; border: 2px solid rgba(148,163,184,0.2); }
+    .sleep-val { text-align: center; font-size: 1.5rem; font-weight: 800; color: #22c55e; margin-bottom: 10px; }
+    input[type=range].ob-range { width: 100%; -webkit-appearance: none; height: 8px; border-radius: 4px; background: linear-gradient(to right,#ef4444,#f59e0b,#22c55e); outline: none; }
+    input[type=range].ob-range::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; border-radius: 50%; background: #22c55e; cursor: pointer; box-shadow: 0 2px 8px rgba(34,197,94,0.4); border: 3px solid #fff; }
+
+    /* Error banner */
+    .ob-error { background: rgba(239,68,68,0.08); border: 1.5px solid rgba(239,68,68,0.2); color: #dc2626; padding: 13px 16px; border-radius: 12px; font-size: 0.85rem; margin-bottom: 20px; display: none; }
+
+    /* Submit btn for onboarding */
+    .ob-btn {
+      width: 100%; padding: 16px; margin-top: 8px;
+      background: linear-gradient(135deg,#22c55e,#16a34a);
+      border: none; border-radius: 16px; color: #fff;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .ob-btn:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(34,197,94,0.4); }
+    .ob-btn:active { transform: translateY(0); }
+
+    /* Textarea */
+    .ob-textarea {
+      width: 100%; padding: 14px 18px; min-height: 80px;
+      background: rgba(248,250,252,0.9); border: 2px solid rgba(148,163,184,0.25);
+      border-radius: 14px; color: #0f172a; font-size: 0.92rem; font-family: 'Inter', sans-serif;
+      resize: vertical; transition: all 0.3s ease; outline: none;
+    }
+    .ob-textarea:focus { border-color: #22c55e; background: #fff; box-shadow: 0 0 0 4px rgba(34,197,94,0.08); }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════
+       SPLASH / CINEMATIC ANIMATION
+  ═══════════════════════════════════ -->
+  <div id="splash-screen">
+    <div class="splash-bg" id="splash-bg"></div>
+
+    <div class="splash-brand" id="splash-brand">
+      <h1>NutriMind</h1>
+      <p>Context-Aware Health Engine</p>
+    </div>
+
+    <div class="food-stage">
+      <div class="food-glow" id="food-glow"></div>
+
+      <!-- Big Burger (real photo) -->
+      <img class="food-img burger-main"
+           src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=900&q=90"
+           alt="Burger">
+      <!-- Burst layers -->
+      <img class="food-img burger-top-bun"
+           src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=500&q=80&crop=top"
+           alt="Bun Top">
+      <img class="food-img burger-patty"
+           src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=500&q=80"
+           alt="Patty">
+      <img class="food-img burger-cheese"
+           src="https://images.unsplash.com/photo-1530469912745-a215c6b256ea?auto=format&fit=crop&w=400&q=80"
+           alt="Cheese">
+      <img class="food-img burger-lettuce"
+           src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=400&q=80"
+           alt="Lettuce">
+      <img class="food-img burger-bottom-bun"
+           src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=500&q=80&crop=bottom"
+           alt="Bun Bottom">
+
+      <!-- Big Salad (real photo) -->
+      <img class="food-img salad-main"
+           src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=90"
+           alt="Salad">
+
+      <!-- Particle container -->
+      <div class="particles-wrap" id="particles-wrap"></div>
+    </div>
+  </div>
+
+  <!-- Background orbs (shared across screens) -->
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       LOGIN SCREEN
+  ═══════════════════════════════════ -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-logo-icon"><i class="fa-solid fa-brain"></i></div>
+        <h2>NutriMind <span>AI</span></h2>
+        <p>Context-Aware Smart Eating System</p>
+      </div>
+
+      <p class="login-welcome" id="login-welcome">Welcome back 👋</p>
+
+      <button class="btn-google" onclick="handleGoogle()">
+        <svg class="google-svg" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tab-in"  onclick="switchTab('in')">Sign In</div>
+        <div class="auth-tab"        id="tab-up"  onclick="switchTab('up')">Sign Up</div>
+      </div>
+
+      <div id="err-login" class="msg-error"></div>
+
+      <!-- Sign In -->
+      <div class="form-section active" id="fs-in">
+        <div class="form-group">
+          <label>Email</label>
+          <div class="input-wrap">
+            <input class="form-control" type="email" id="in-email" placeholder="you@example.com">
+            <i class="fa-solid fa-envelope input-icon"></i>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <input class="form-control" type="password" id="in-pwd" placeholder="••••••••">
+            <i class="fa-solid fa-lock input-icon"></i>
+          </div>
+        </div>
+        <button class="btn-submit" onclick="handleSignIn()"><span><i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In</span></button>
+      </div>
+
+      <!-- Sign Up -->
+      <div class="form-section" id="fs-up">
+        <div class="form-group">
+          <label>Full Name</label>
+          <div class="input-wrap">
+            <input class="form-control" type="text" id="up-name" placeholder="e.g. Divya Sharma">
+            <i class="fa-solid fa-user input-icon"></i>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <div class="input-wrap">
+            <input class="form-control" type="email" id="up-email" placeholder="you@example.com">
+            <i class="fa-solid fa-envelope input-icon"></i>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <input class="form-control" type="password" id="up-pwd" placeholder="Create a password">
+            <i class="fa-solid fa-lock input-icon"></i>
+          </div>
+        </div>
+        <button class="btn-submit" onclick="handleSignUp()"><span><i class="fa-solid fa-user-plus"></i> Create Account</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       STEP 1: BODY & LIFESTYLE
+  ═══════════════════════════════════ -->
+  <div class="onboarding-screen" id="ob-step1">
+    <div class="ob-card">
+      <div class="ob-header">
+        <div class="ob-step-badge"><i class="fa-solid fa-person"></i> Step 1 of 2</div>
+        <h2>Your <span>Body & Lifestyle</span></h2>
+        <p>Tell us about yourself so we can personalize your nutrition plan.</p>
+      </div>
+      <div class="ob-progress"><div class="ob-progress-bar" style="width:50%"></div></div>
+
+      <div id="ob1-error" class="ob-error"></div>
+
+      <div class="ob-grid-2">
+        <div class="ob-form-group">
+          <label><i class="fa-solid fa-ruler-vertical"></i> Height (cm)</label>
+          <input class="ob-input" type="number" id="ob1-height" placeholder="e.g. 165" min="100" max="250">
+        </div>
+        <div class="ob-form-group">
+          <label><i class="fa-solid fa-weight-scale"></i> Weight (kg)</label>
+          <input class="ob-input" type="number" id="ob1-weight" placeholder="e.g. 60" min="30" max="250">
+        </div>
+      </div>
+
+      <div class="ob-form-group">
+        <label><i class="fa-solid fa-bullseye"></i> Your Goal</label>
+        <div class="ob-pills" id="pills-goal">
+          <div class="ob-pill" data-val="Weight Loss" onclick="pickPill('pills-goal',this)">⚖️ Weight Loss</div>
+          <div class="ob-pill" data-val="Weight Gain" onclick="pickPill('pills-goal',this)">💪 Weight Gain</div>
+          <div class="ob-pill" data-val="Maintain"    onclick="pickPill('pills-goal',this)">🛡️ Maintain</div>
+        </div>
+      </div>
+
+      <div class="ob-form-group">
+        <label><i class="fa-solid fa-house"></i> Lifestyle</label>
+        <div class="ob-pills" id="pills-lifestyle">
+          <div class="ob-pill" data-val="Home"        onclick="pickPill('pills-lifestyle',this)">🏠 Home</div>
+          <div class="ob-pill" data-val="Hostel"      onclick="pickPill('pills-lifestyle',this)">🎓 Hostel</div>
+          <div class="ob-pill" data-val="Working/PG"  onclick="pickPill('pills-lifestyle',this)">💼 Working / PG</div>
+        </div>
+      </div>
+
+      <button class="ob-btn" onclick="submitStep1()">Next <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       STEP 2: DAILY HEALTH INPUT
+  ═══════════════════════════════════ -->
+  <div class="onboarding-screen" id="ob-step2">
+    <div class="ob-card">
+      <div class="ob-header">
+        <div class="ob-step-badge"><i class="fa-solid fa-utensils"></i> Step 2 of 2</div>
+        <h2>Today's <span>Health Check</span></h2>
+        <p>Log your meals, sleep and mood to kick-start your AI analysis.</p>
+      </div>
+      <div class="ob-progress"><div class="ob-progress-bar" style="width:100%"></div></div>
+
+      <div id="ob2-error" class="ob-error"></div>
+
+      <div class="ob-form-group">
+        <label><i class="fa-solid fa-sun"></i> Breakfast</label>
+        <input class="ob-input" type="text" id="ob2-breakfast" placeholder="e.g. Oatmeal with banana">
+      </div>
+      <div class="ob-form-group">
+        <label><i class="fa-solid fa-cloud-sun"></i> Lunch</label>
+        <input class="ob-input" type="text" id="ob2-lunch" placeholder="e.g. Rice, dal, sabzi">
+      </div>
+      <div class="ob-form-group">
+        <label><i class="fa-solid fa-moon"></i> Dinner</label>
+        <input class="ob-input" type="text" id="ob2-dinner" placeholder="e.g. Roti with paneer">
+      </div>
+
+      <div class="ob-form-group">
+        <label><i class="fa-solid fa-bed"></i> Sleep Last Night</label>
+        <div class="sleep-slider-wrap">
+          <div class="sleep-val" id="sleep-val-display">7 hours</div>
+          <input class="ob-range" type="range" id="ob2-sleep" min="4" max="10" step="0.5" value="7"
+                 oninput="document.getElementById('sleep-val-display').textContent = this.value + ' hours'">
+        </div>
+      </div>
+
+      <div class="ob-form-group">
+        <label><i class="fa-solid fa-face-smile"></i> Today's Mood</label>
+        <div class="ob-pills" id="pills-mood">
+          <div class="ob-pill" data-val="Happy"   onclick="pickPill('pills-mood',this)">😄 Happy</div>
+          <div class="ob-pill" data-val="Normal"  onclick="pickPill('pills-mood',this)">😐 Normal</div>
+          <div class="ob-pill" data-val="Stressed" onclick="pickPill('pills-mood',this)">😤 Stressed</div>
+          <div class="ob-pill" data-val="Tired"   onclick="pickPill('pills-mood',this)">😴 Tired</div>
+        </div>
+      </div>
+
+      <div class="ob-form-group">
+        <label><i class="fa-solid fa-dumbbell"></i> Did you exercise today?</label>
+        <div class="ob-pills" id="pills-exercise">
+          <div class="ob-pill" data-val="Yes" onclick="pickPill('pills-exercise',this)">✅ Yes</div>
+          <div class="ob-pill" data-val="No"  onclick="pickPill('pills-exercise',this)">❌ No</div>
+        </div>
+      </div>
+
+      <button class="ob-btn" onclick="submitStep2()">
+        <i class="fa-solid fa-rocket"></i> Go to Dashboard
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       JAVASCRIPT
+  ═══════════════════════════════════ -->
+  <script>
+  // ── Accounts storage helpers ─────────────────────────────
+  const getAccounts = () => JSON.parse(localStorage.getItem('nm_accounts') || '{}');
+  const saveAccounts = (a) => localStorage.setItem('nm_accounts', JSON.stringify(a));
+  const getUser = () => JSON.parse(localStorage.getItem('nm_user') || 'null');
+  const saveUser = (u) => localStorage.setItem('nm_user', JSON.stringify(u));
+
+  // ── If already fully onboarded → go straight to dashboard ──
+  (function checkExistingAuth() {
+    const auth = localStorage.getItem('nm_auth');
+    if (!auth) return; // no auth → show animation
+    const user = getUser();
+    if (user && user.onboardingComplete) {
+      window.location.href = '/';
+    }
+    // else fall through to show onboarding
+  })();
+
+  // ═══════════════════════════════════════════════
+  // CINEMATIC ANIMATION
+  // ═══════════════════════════════════════════════
+  (function runCinematic() {
+    const stage  = document.querySelector('.food-stage');
+    const splash = document.getElementById('splash-screen');
+    const brand  = document.getElementById('splash-brand');
+    const splashBg = document.getElementById('splash-bg');
+    const pw     = document.getElementById('particles-wrap');
+
+    // Create burst particles
+    function makeParticles() {
+      const colors = ['#22c55e','#fbbf24','#ef4444','#f97316','#a855f7','#06b6d4','#10b981'];
+      const count = 40;
+      const cx = pw.offsetWidth  / 2 || 320;
+      const cy = pw.offsetHeight / 2 || 320;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'ptcl';
+        const sz = 6 + Math.random() * 20;
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+        const dist  = 150 + Math.random() * 280;
+        p.style.cssText = `width:${sz}px;height:${sz}px;left:${cx}px;top:${cy}px;background:${colors[i%colors.length]};`;
+        p.style.setProperty('--tx', Math.cos(angle)*dist + 'px');
+        p.style.setProperty('--ty', Math.sin(angle)*dist + 'px');
+        pw.appendChild(p);
+      }
+    }
+
+    function setStep(n) { stage.className = 'food-stage step-' + n; }
+
+    // Timeline (ms):
+    // 0    → brand fades in
+    // 400  → step-1  burger bounces in
+    // 1700 → step-2  burger zooms
+    // 2500 → step-3  CRASH: layers fly + particles
+    // 3300 → step-4  layers vanish
+    // 3900 → bg gradient fades in
+    // 4100 → step-5  salad appears with glow
+    // 5600 → step-6  salad pulses
+    // 6900 → splash fades → login shown
+
+    setTimeout(() => brand.classList.add('visible'), 100);
+    setTimeout(() => { makeParticles(); setStep(1); }, 400);
+    setTimeout(() => setStep(2), 1700);
+    setTimeout(() => setStep(3), 2500);
+    setTimeout(() => setStep(4), 3300);
+    setTimeout(() => {
+      splashBg.style.opacity = '1';
+      // Switch brand text colour for healthy phase
+      brand.querySelector('h1').style.cssText = 'background:linear-gradient(135deg,#22c55e,#0ea5e9);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;opacity:1;transform:translateY(0);font-family:Space Grotesk,sans-serif;font-size:clamp(2.5rem,7vw,5rem);font-weight:800;letter-spacing:-2px;';
+    }, 3900);
+    setTimeout(() => setStep(5), 4100);
+    setTimeout(() => setStep(6), 5600);
+
+    // Reveal login
+    setTimeout(() => {
+      splash.style.opacity = '0';
+      setTimeout(() => {
+        splash.style.display = 'none';
+        // Show login (check if user has session but no onboarding)
+        const user = getUser();
+        if (user && !user.onboardingComplete) {
+          showStep1();
+        } else {
+          showLogin();
+        }
+      }, 1400);
+    }, 6900);
+  })();
+
+  // ═══════════════════════════════════════════════
+  // SCREEN TRANSITIONS
+  // ═══════════════════════════════════════════════
+  function showLogin() {
+    document.getElementById('login-screen').classList.add('visible');
+  }
+  function showStep1() {
+    document.getElementById('login-screen').classList.remove('visible');
+    document.getElementById('ob-step2').classList.remove('visible');
+    document.getElementById('ob-step1').classList.add('visible');
+  }
+  function showStep2() {
+    document.getElementById('ob-step1').classList.remove('visible');
+    document.getElementById('ob-step2').classList.add('visible');
+  }
+
+  // ═══════════════════════════════════════════════
+  // AUTH
+  // ═══════════════════════════════════════════════
+  function switchTab(t) {
+    document.querySelectorAll('.auth-tab').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.form-section').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + t).classList.add('active');
+    document.getElementById('err-login').style.display = 'none';
+    document.getElementById('login-welcome').textContent = t === 'in' ? 'Welcome back 👋' : 'Create your account 🚀';
+    setTimeout(() => document.getElementById('fs-' + t).classList.add('active'), 60);
+  }
+
+  function showAuthErr(msg) {
+    const el = document.getElementById('err-login');
+    el.textContent = msg; el.style.display = 'block';
+  }
+
+  function afterAuthSuccess(user) {
+    localStorage.setItem('nm_auth', JSON.stringify({ email: user.email, name: user.name }));
+    saveUser(user);
+    showStep1();
+  }
+
+  function handleSignIn() {
+    const email = document.getElementById('in-email').value.trim();
+    const pwd   = document.getElementById('in-pwd').value;
+    if (!email || !pwd) { showAuthErr('Please fill all fields.'); return; }
+    const accounts = getAccounts();
+    if (!accounts[email]) { showAuthErr('Account not found. Please sign up.'); return; }
+    if (accounts[email].password !== pwd) { showAuthErr('Incorrect password.'); return; }
+    const user = accounts[email];
+    if (user.onboardingComplete) {
+      localStorage.setItem('nm_auth', JSON.stringify({ email: user.email, name: user.name }));
+      saveUser(user);
+      window.location.href = '/';
+    } else {
+      afterAuthSuccess(user);
+    }
+  }
+
+  function handleSignUp() {
+    const name  = document.getElementById('up-name').value.trim();
+    const email = document.getElementById('up-email').value.trim();
+    const pwd   = document.getElementById('up-pwd').value;
+    if (!name || !email || !pwd) { showAuthErr('All fields are required.'); return; }
+    if (!email.includes('@')) { showAuthErr('Enter a valid email.'); return; }
+    if (pwd.length < 6) { showAuthErr('Password must be at least 6 characters.'); return; }
+    const accounts = getAccounts();
+    if (accounts[email]) { showAuthErr('Email already registered. Sign in instead.'); return; }
+    const newUser = { name, email, password: pwd, onboardingComplete: false, createdAt: new Date().toISOString() };
+    accounts[email] = newUser;
+    saveAccounts(accounts);
+    afterAuthSuccess(newUser);
+  }
+
+  function handleGoogle() {
+    const ts = Date.now();
+    const email = `user.${ts}@google.demo`;
+    const name  = 'Google User';
+    const accounts = getAccounts();
+    const googleUser = { name, email, password: 'google', onboardingComplete: false, isGoogle: true, createdAt: new Date().toISOString() };
+    accounts[email] = googleUser;
+    saveAccounts(accounts);
+    afterAuthSuccess(googleUser);
+  }
+
+  // ═══════════════════════════════════════════════
+  // PILL HELPER
+  // ═══════════════════════════════════════════════
+  function pickPill(containerId, el) {
+    document.querySelectorAll('#' + containerId + ' .ob-pill').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+  function getPillVal(containerId) {
+    const sel = document.querySelector('#' + containerId + ' .ob-pill.selected');
+    return sel ? sel.dataset.val : null;
+  }
+
+  // ═══════════════════════════════════════════════
+  // STEP 1 SUBMIT
+  // ═══════════════════════════════════════════════
+  function submitStep1() {
+    const errEl = document.getElementById('ob1-error');
+    errEl.style.display = 'none';
+
+    const height    = parseInt(document.getElementById('ob1-height').value, 10);
+    const weight    = parseInt(document.getElementById('ob1-weight').value, 10);
+    const goal      = getPillVal('pills-goal');
+    const lifestyle = getPillVal('pills-lifestyle');
+
+    if (!height || height < 100 || height > 250) { errEl.textContent = 'Enter a valid height (100–250 cm).'; errEl.style.display = 'block'; return; }
+    if (!weight || weight < 30  || weight > 250)  { errEl.textContent = 'Enter a valid weight (30–250 kg).';  errEl.style.display = 'block'; return; }
+    if (!goal)      { errEl.textContent = 'Please select your goal.';     errEl.style.display = 'block'; return; }
+    if (!lifestyle) { errEl.textContent = 'Please select your lifestyle.'; errEl.style.display = 'block'; return; }
+
+    const user = getUser() || {};
+    const bmi  = +(weight / ((height/100)**2)).toFixed(1);
+    Object.assign(user, { height, weight, bmi, goal, lifestyle });
+    saveUser(user);
+
+    // Update accounts
+    const accounts = getAccounts();
+    if (user.email && accounts[user.email]) {
+      Object.assign(accounts[user.email], { height, weight, bmi, goal, lifestyle });
+      saveAccounts(accounts);
+    }
+
+    showStep2();
+  }
+
+  // ═══════════════════════════════════════════════
+  // STEP 2 SUBMIT
+  // ═══════════════════════════════════════════════
+  function submitStep2() {
+    const errEl = document.getElementById('ob2-error');
+    errEl.style.display = 'none';
+
+    const breakfast = document.getElementById('ob2-breakfast').value.trim();
+    const lunch     = document.getElementById('ob2-lunch').value.trim();
+    const dinner    = document.getElementById('ob2-dinner').value.trim();
+    const sleep     = parseFloat(document.getElementById('ob2-sleep').value);
+    const mood      = getPillVal('pills-mood');
+    const exercise  = getPillVal('pills-exercise');
+
+    if (!breakfast) { errEl.textContent = 'Please enter what you had for breakfast.'; errEl.style.display = 'block'; return; }
+    if (!lunch)     { errEl.textContent = 'Please enter your lunch.';     errEl.style.display = 'block'; return; }
+    if (!dinner)    { errEl.textContent = 'Please enter your dinner.';    errEl.style.display = 'block'; return; }
+    if (!mood)      { errEl.textContent = 'Please select your mood.';     errEl.style.display = 'block'; return; }
+    if (!exercise)  { errEl.textContent = 'Did you exercise? Please select.'; errEl.style.display = 'block'; return; }
+
+    const today = new Date().toDateString();
+    const dailyEntry = { date: today, breakfast, lunch, dinner, sleep, mood, exercise, loggedAt: new Date().toISOString() };
+
+    // Save user + mark onboarding complete
+    const user = getUser() || {};
+    user.onboardingComplete = true;
+    user.sleepHours = sleep;
+    user.lastMood   = mood;
+    user.exercise   = exercise;
+    saveUser(user);
+
+    // Update accounts record
+    const accounts = getAccounts();
+    if (user.email && accounts[user.email]) {
+      accounts[user.email].onboardingComplete = true;
+      accounts[user.email].sleepHours = sleep;
+      saveAccounts(accounts);
+    }
+
+    // Save daily check-in keyed by user email
+    const key = `nm_daily_checkin_${user.email || 'guest'}`;
+    const existing = JSON.parse(localStorage.getItem(key) || '[]');
+    existing.push(dailyEntry);
+    localStorage.setItem(key, JSON.stringify(existing));
+    localStorage.setItem('nm_checkin_date', today);
+
+    // Save meal log
+    const mealKey = `nm_meals_${(user.name||'user').toLowerCase()}`;
+    const meals = JSON.parse(localStorage.getItem(mealKey) || '[]');
+    const now = new Date().toISOString();
+    meals.push({ id: Date.now(),     food: breakfast, category: 'breakfast', time: now, calories: 300 });
+    meals.push({ id: Date.now()+1,   food: lunch,     category: 'lunch',     time: now, calories: 500 });
+    meals.push({ id: Date.now()+2,   food: dinner,    category: 'dinner',    time: now, calories: 450 });
+    localStorage.setItem(mealKey, JSON.stringify(meals));
+
+    // Redirect to dashboard
+    window.location.href = '/';
+  }
+  </script>
+
+</body>
+</html>

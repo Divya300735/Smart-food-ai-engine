@@ -1,0 +1,52 @@
+{
+  "foods": [
+    { "name": "Oatmeal", "calories": 150, "protein": 6, "carbs": 27, "fat": 3, "category": "breakfast", "healthScore": 90, "mood": ["happy", "neutral"], "weather": ["cold", "rainy"] },
+    { "name": "Greek Yogurt", "calories": 100, "protein": 17, "carbs": 6, "fat": 0.7, "category": "snack", "healthScore": 88, "mood": ["happy", "stressed"], "weather": ["any"] },
+    { "name": "Banana", "calories": 89, "protein": 1.1, "carbs": 23, "fat": 0.3, "category": "snack", "healthScore": 85, "mood": ["sad", "stressed", "happy"], "weather": ["any"] },
+    { "name": "Grilled Chicken Salad", "calories": 320, "protein": 35, "carbs": 12, "fat": 14, "category": "lunch", "healthScore": 92, "mood": ["happy", "neutral"], "weather": ["hot", "sunny"] },
+    { "name": "Lentil Soup", "calories": 230, "protein": 18, "carbs": 30, "fat": 3, "category": "dinner", "healthScore": 91, "mood": ["sad", "stressed"], "weather": ["cold", "rainy"] },
+    { "name": "Mixed Nuts", "calories": 170, "protein": 5, "carbs": 6, "fat": 15, "category": "snack", "healthScore": 82, "mood": ["stressed", "neutral"], "weather": ["any"] },
+    { "name": "Smoothie Bowl", "calories": 280, "protein": 8, "carbs": 52, "fat": 5, "category": "breakfast", "healthScore": 87, "mood": ["happy", "excited"], "weather": ["hot", "sunny"] },
+    { "name": "Avocado Toast", "calories": 310, "protein": 10, "carbs": 35, "fat": 16, "category": "breakfast", "healthScore": 85, "mood": ["happy", "neutral"], "weather": ["any"] },
+    { "name": "Quinoa Bowl", "calories": 350, "protein": 14, "carbs": 48, "fat": 10, "category": "lunch", "healthScore": 93, "mood": ["any"], "weather": ["any"] },
+    { "name": "Dark Chocolate", "calories": 170, "protein": 2, "carbs": 21, "fat": 9, "category": "snack", "healthScore": 65, "mood": ["sad", "stressed"], "weather": ["any"] },
+    { "name": "Salmon Rice", "calories": 420, "protein": 32, "carbs": 40, "fat": 12, "category": "dinner", "healthScore": 90, "mood": ["any"], "weather": ["any"] },
+    { "name": "Fruit Salad", "calories": 120, "protein": 2, "carbs": 28, "fat": 0.5, "category": "snack", "healthScore": 88, "mood": ["happy", "excited"], "weather": ["hot", "sunny"] },
+    { "name": "Tomato Soup", "calories": 180, "protein": 5, "carbs": 25, "fat": 6, "category": "lunch", "healthScore": 80, "mood": ["sad", "stressed"], "weather": ["cold", "rainy"] },
+    { "name": "Egg White Omelette", "calories": 140, "protein": 22, "carbs": 3, "fat": 4, "category": "breakfast", "healthScore": 89, "mood": ["any"], "weather": ["any"] },
+    { "name": "Hummus & Veggies", "calories": 200, "protein": 8, "carbs": 22, "fat": 9, "category": "snack", "healthScore": 86, "mood": ["neutral", "happy"], "weather": ["any"] },
+    { "name": "Pizza Slice", "calories": 285, "protein": 12, "carbs": 36, "fat": 10, "category": "junk", "healthScore": 40, "mood": ["happy"], "weather": ["any"] },
+    { "name": "Burger", "calories": 540, "protein": 25, "carbs": 45, "fat": 28, "category": "junk", "healthScore": 30, "mood": ["happy"], "weather": ["any"] },
+    { "name": "French Fries", "calories": 365, "protein": 4, "carbs": 48, "fat": 17, "category": "junk", "healthScore": 25, "mood": ["happy", "stressed"], "weather": ["any"] },
+    { "name": "Ice Cream", "calories": 270, "protein": 5, "carbs": 33, "fat": 14, "category": "junk", "healthScore": 35, "mood": ["sad", "happy"], "weather": ["hot"] },
+    { "name": "Watermelon", "calories": 85, "protein": 1.7, "carbs": 21, "fat": 0.4, "category": "fruit", "healthScore": 90, "mood": ["any"], "weather": ["hot", "sunny"] }
+  ],
+  "swaps": {
+    "Pizza Slice": { "alternative": "Cauliflower Pizza", "calories": 150, "reason": "Same satisfaction, 47% fewer calories" },
+    "Burger": { "alternative": "Turkey Lettuce Wrap", "calories": 280, "reason": "High protein, low carb, fully satisfying" },
+    "French Fries": { "alternative": "Baked Sweet Potato Fries", "calories": 130, "reason": "Rich in Vitamin A, 64% fewer calories" },
+    "Ice Cream": { "alternative": "Frozen Banana Nice Cream", "calories": 105, "reason": "Natural sugars, potassium boost" },
+    "Chips": { "alternative": "Roasted Chickpeas", "calories": 120, "reason": "High protein, same crunch factor" }
+  },
+  "moodFoods": {
+    "happy": ["Smoothie Bowl", "Fruit Salad", "Avocado Toast", "Grilled Chicken Salad"],
+    "sad": ["Dark Chocolate", "Lentil Soup", "Tomato Soup", "Banana"],
+    "stressed": ["Mixed Nuts", "Greek Yogurt", "Dark Chocolate", "Banana"],
+    "tired": ["Oatmeal", "Egg White Omelette", "Smoothie Bowl", "Fruit Salad"],
+    "anxious": ["Chamomile Tea", "Oatmeal", "Greek Yogurt", "Mixed Nuts"],
+    "excited": ["Smoothie Bowl", "Quinoa Bowl", "Fruit Salad", "Avocado Toast"]
+  },
+  "weatherFoods": {
+    "rainy": ["Lentil Soup", "Tomato Soup", "Oatmeal", "Mixed Nuts"],
+    "sunny": ["Fruit Salad", "Smoothie Bowl", "Grilled Chicken Salad", "Watermelon"],
+    "cold": ["Lentil Soup", "Oatmeal", "Tomato Soup", "Quinoa Bowl"],
+    "hot": ["Watermelon", "Smoothie Bowl", "Fruit Salad", "Greek Yogurt"]
+  },
+  "groceryItems": {
+    "protein": ["Chicken Breast", "Eggs", "Greek Yogurt", "Lentils", "Salmon", "Tofu"],
+    "carbs": ["Oats", "Brown Rice", "Quinoa", "Sweet Potato", "Whole Grain Bread"],
+    "fats": ["Avocado", "Mixed Nuts", "Olive Oil", "Dark Chocolate (70%+)", "Chia Seeds"],
+    "vitamins": ["Spinach", "Broccoli", "Berries", "Citrus Fruits", "Tomatoes"],
+    "hydration": ["Cucumber", "Watermelon", "Coconut Water", "Lemon", "Mint"]
+  }
+}
