@@ -14,12 +14,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// File upload setup
-const upload = multer({ dest: 'uploads/', limits: { fileSize: 10 * 1024 * 1024 } });
-if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
+// File upload setup (Vercel requires writing to /tmp)
+const tmpUploadsDir = process.env.NODE_ENV === 'production' ? '/tmp/uploads' : path.join(__dirname, 'uploads');
+const upload = multer({ dest: tmpUploadsDir, limits: { fileSize: 10 * 1024 * 1024 } });
+if (!fs.existsSync(tmpUploadsDir)) fs.mkdirSync(tmpUploadsDir, { recursive: true });
 
 // Load food database
-const foodDB = JSON.parse(fs.readFileSync('./data/foods.json', 'utf8'));
+const foodDB = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'foods.json'), 'utf8'));
 
 // In-memory user store (in production, use MongoDB)
 let users = {};
