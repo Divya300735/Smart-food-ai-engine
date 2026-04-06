@@ -173,6 +173,8 @@ You only need [Node.js](https://nodejs.org/) installed to run this project. The 
 - **Performance Optimized**: Lazy loading and smooth transitions
 - **Professional Polish**: Blur effects, glow, and micro-interactions
 
+- Deployement Link:https://smart-food-ai-engine-et3o.vercel.app/
+
 ---
 Smart Food. Smart Life.
 
