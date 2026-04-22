@@ -9,7 +9,7 @@ NutriMind AI is a state-of-the-art context-aware health and nutrition tracking s
 ![Streak: Real-time](https://img.shields.io/badge/Streak-Real_time-22c55e?style=flat-square)
 
 ---
-
+Live Demo:https://smart-food-ai-engine-et3o.vercel.app
 ## 🌟 Key Features
 
 ### 🎬 **Cinematic Experience**
@@ -173,7 +173,7 @@ You only need [Node.js](https://nodejs.org/) installed to run this project. The 
 - **Performance Optimized**: Lazy loading and smooth transitions
 - **Professional Polish**: Blur effects, glow, and micro-interactions
 
-- Deployement Link:https://smart-food-ai-engine-et3o.vercel.app
+
 
 ---
 Smart Food. Smart Life.
